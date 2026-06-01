@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+python-jobspy
+pandas
+requests
+beautifulsoup4
+lxml
