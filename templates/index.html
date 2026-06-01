@@ -188,6 +188,63 @@
       color: var(--active, #2563eb);
     }
 
+    /* ── Grupo pills ─────────────────────────────────────────────────── */
+    .grupo-pills { display:flex; flex-wrap:wrap; gap:6px; }
+    .grupo-pill {
+      padding: 5px 12px; border-radius: 20px; border: 1.5px solid;
+      font-size: .78rem; font-weight: 700; cursor: pointer;
+      background: transparent; transition: all .15s; line-height: 1.4;
+    }
+    .grupo-pill[data-pri="alta"]      { border-color:#16a34a; color:#16a34a; }
+    .grupo-pill[data-pri="media-alta"]{ border-color:#ca8a04; color:#ca8a04; }
+    .grupo-pill[data-pri="media"]     { border-color:#ea580c; color:#ea580c; }
+    .grupo-pill[data-pri="alta"].active      { background:#16a34a; color:#fff; }
+    .grupo-pill[data-pri="media-alta"].active{ background:#ca8a04; color:#fff; }
+    .grupo-pill[data-pri="media"].active     { background:#ea580c; color:#fff; }
+
+    /* ── Titulo chips ────────────────────────────────────────────────── */
+    .titulo-chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .titulo-chip {
+      padding: 5px 11px; border-radius: 7px; border: 1.5px solid var(--border);
+      font-size: .82rem; cursor: pointer; background: #fff; color: var(--muted);
+      transition: all .15s; text-align:left;
+    }
+    .titulo-chip.selected {
+      background: var(--tc-bg,#f1f5f9); color: var(--tc-cor,#64748b);
+      border-color: var(--tc-cor,#64748b); font-weight: 600;
+    }
+
+    /* ── Actions main ────────────────────────────────────────────────── */
+    .actions-main {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto auto;
+      gap: 8px; margin-top: 4px;
+    }
+    .btn-grupo {
+      padding: 13px 14px; font-size: .85rem; font-weight: 600;
+      color: var(--text); background: #fff; border: 1.5px solid var(--border);
+      border-radius: 8px; cursor: pointer; white-space:nowrap;
+      transition: border-color .15s;
+    }
+    .btn-grupo:hover { border-color: var(--active,#2563eb); color: var(--active,#2563eb); }
+    .btn-tudo {
+      padding: 13px 14px; font-size: .85rem; font-weight: 700;
+      color: #fff; background: #7c3aed;
+      border: none; border-radius: 8px; cursor: pointer; white-space:nowrap;
+      transition: background .15s;
+    }
+    .btn-tudo:hover { background: #6d28d9; }
+    .btn-tudo:disabled, .btn-grupo:disabled { opacity:.5; cursor:not-allowed; }
+
+    /* ── Priority badge em cards ─────────────────────────────────────── */
+    .pri-badge {
+      font-size: .68rem; font-weight: 700; padding: 2px 7px;
+      border-radius: 10px; white-space:nowrap;
+    }
+    .pri-alta      { background:#dcfce7; color:#16a34a; }
+    .pri-media-alta{ background:#fef9c3; color:#ca8a04; }
+    .pri-media     { background:#ffedd5; color:#ea580c; }
+
     /* ── Localização ─────────────────────────────────────────────────── */
     .loc-row {
       display: grid;
@@ -416,7 +473,7 @@
       .checkbox-field { grid-column: span 2; }
       .loc-row { grid-template-columns: 1fr 1fr; }
       .loc-row > div:last-child { display: none; }
-      .actions-row { grid-template-columns: 1fr auto auto; }
+      .actions-main { grid-template-columns: 1fr auto auto auto auto; }
       .vaga-header { flex-direction: column; }
       .vaga-link { align-self: flex-start; }
     }
@@ -440,12 +497,12 @@
 
   <div class="form-card">
     <div class="field">
-      <label>Grupo de vagas</label>
-      <select id="ti-grupo" onchange="tiGrupoChange()"></select>
+      <label>Grupo / Prioridade</label>
+      <div id="ti-grupo-pills" class="grupo-pills"></div>
     </div>
     <div class="field">
       <label>Título da vaga</label>
-      <select id="ti-titulo"></select>
+      <div id="ti-titulo-chips" class="titulo-chips"></div>
     </div>
     <div class="loc-row">
       <div class="field" style="margin:0">
@@ -473,12 +530,9 @@
       <div class="field" style="margin:0">
         <label>Últimas horas</label>
         <select id="ti-horas">
-          <option value="24">24h</option>
-          <option value="48">48h</option>
-          <option value="72">72h</option>
-          <option value="168" selected>7 dias</option>
-          <option value="336">2 semanas</option>
-          <option value="720">1 mês</option>
+          <option value="24">24h</option><option value="48">48h</option>
+          <option value="72">72h</option><option value="168" selected>7 dias</option>
+          <option value="336">2 semanas</option><option value="720">1 mês</option>
         </select>
       </div>
       <div class="checkbox-field">
@@ -486,10 +540,12 @@
         <label for="ti-remoto">Só remoto</label>
       </div>
     </div>
-    <div class="actions-row">
-      <button class="btn-buscar" id="ti-btn"  onclick="buscar('ti')">▶ Buscar Vagas</button>
-      <button class="btn-stop"   id="ti-stop" onclick="parar('ti')">■ Parar</button>
-      <button class="btn-csv"    id="ti-csv"  onclick="baixarCSV('ti')">⬇ CSV</button>
+    <div class="actions-main">
+      <button class="btn-buscar" id="ti-btn"       onclick="buscar('ti')">▶ Buscar Vaga</button>
+      <button class="btn-grupo"  id="ti-btn-grupo" onclick="buscarGrupo('ti')" title="Busca todos os títulos do grupo selecionado">📋 Grupo</button>
+      <button class="btn-tudo"   id="ti-btn-tudo"  onclick="buscarTudo('ti')"  title="Busca todos os grupos">⚡ Tudo</button>
+      <button class="btn-stop"   id="ti-stop"      onclick="parar('ti')">■</button>
+      <button class="btn-csv"    id="ti-csv"       onclick="baixarCSV('ti')">⬇</button>
     </div>
   </div>
 
@@ -515,8 +571,12 @@
 
   <div class="form-card">
     <div class="field">
+      <label>Grupo / Prioridade</label>
+      <div id="rh-grupo-pills" class="grupo-pills"></div>
+    </div>
+    <div class="field">
       <label>Título da vaga</label>
-      <select id="rh-titulo"></select>
+      <div id="rh-titulo-chips" class="titulo-chips"></div>
     </div>
     <div class="loc-row">
       <div class="field" style="margin:0">
@@ -544,12 +604,9 @@
       <div class="field" style="margin:0">
         <label>Últimas horas</label>
         <select id="rh-horas">
-          <option value="24">24h</option>
-          <option value="48">48h</option>
-          <option value="72">72h</option>
-          <option value="168" selected>7 dias</option>
-          <option value="336">2 semanas</option>
-          <option value="720">1 mês</option>
+          <option value="24">24h</option><option value="48">48h</option>
+          <option value="72">72h</option><option value="168" selected>7 dias</option>
+          <option value="336">2 semanas</option><option value="720">1 mês</option>
         </select>
       </div>
       <div class="checkbox-field">
@@ -557,10 +614,12 @@
         <label for="rh-remoto">Só remoto</label>
       </div>
     </div>
-    <div class="actions-row">
-      <button class="btn-buscar" id="rh-btn"  onclick="buscar('rh')">▶ Buscar Vagas</button>
-      <button class="btn-stop"   id="rh-stop" onclick="parar('rh')">■ Parar</button>
-      <button class="btn-csv"    id="rh-csv"  onclick="baixarCSV('rh')">⬇ CSV</button>
+    <div class="actions-main">
+      <button class="btn-buscar" id="rh-btn"       onclick="buscar('rh')">▶ Buscar Vaga</button>
+      <button class="btn-grupo"  id="rh-btn-grupo" onclick="buscarGrupo('rh')" title="Busca todos os títulos do grupo selecionado">📋 Grupo</button>
+      <button class="btn-tudo"   id="rh-btn-tudo"  onclick="buscarTudo('rh')"  title="Busca todos os grupos">⚡ Tudo</button>
+      <button class="btn-stop"   id="rh-stop"      onclick="parar('rh')">■</button>
+      <button class="btn-csv"    id="rh-csv"       onclick="baixarCSV('rh')">⬇</button>
     </div>
   </div>
 
@@ -583,45 +642,98 @@
 <script>
 // ── Config ────────────────────────────────────────────────────────────────────
 const GRUPOS_TI = {
-  "Alta Chance — Suporte / Helpdesk": [
-    "Analista de Suporte N2 Remoto","Analista de Suporte N3 Remoto",
-    "Analista de Suporte TI Pleno","Analista de Field Support Pleno",
+  "🟢 Alta Chance — Suporte / Helpdesk": [
+    "Analista de Suporte N2 Remoto",
+    "Analista de Suporte N3 Remoto",
+    "Analista de Suporte Técnico Pleno",
+    "Analista de Suporte TI Pleno Remoto",
+    "Analista de Field Support Pleno",
+    "Técnico de Suporte N2 Remoto",
     "Especialista de Suporte TI Remoto",
   ],
-  "Alta Chance — SysAdmin / Windows": [
-    "Analista de Infraestrutura Windows","Administrador Active Directory",
-    "Analista Azure AD Infraestrutura","SysAdmin Pleno",
-    "Analista Endpoint Management Intune","Analista Identidade e Acesso IAM",
+  "🟢 Alta Chance — SysAdmin / Windows": [
+    "Analista de Infraestrutura Windows Pleno",
+    "Administrador de Active Directory",
+    "Analista de Active Directory e Azure AD",
+    "SysAdmin Pleno Remoto",
+    "Windows Systems Administrator",
+    "Analista de Identidade e Acesso (IAM)",
+    "Analista de Endpoint Management",
+    "Analista Endpoint Management Intune",
   ],
-  "Média-Alta — Infraestrutura": [
-    "Analista de Infraestrutura TI Pleno","Analista de Infraestrutura Redes",
-    "Analista de Datacenter Pleno","Analista NOC Pleno",
+  "🟡 Média-Alta — Infraestrutura": [
+    "Analista de Infraestrutura de TI Pleno",
+    "Analista de Infraestrutura Pleno Remoto",
+    "Analista de Infraestrutura e Redes Pleno",
+    "Analista de TI Pleno Infraestrutura",
+    "Técnico de Infraestrutura Pleno",
+    "Analista de Datacenter Pleno",
+    "Analista NOC Pleno Remoto",
   ],
-  "Média-Alta — Redes / Segurança": [
-    "Analista de Redes Pleno","Analista de Firewall Fortinet",
-    "Especialista FortiGate","Analista de Segurança de Redes",
+  "🟡 Média-Alta — Redes / Segurança": [
+    "Analista de Redes Pleno Remoto",
+    "Analista de Segurança de Redes",
+    "Analista de Firewall Remoto",
+    "Analista de Firewall Fortinet",
+    "Especialista FortiGate",
+    "Analista de Redes e Segurança Pleno",
   ],
-  "Média-Alta — Cloud Híbrido": [
-    "Analista Infraestrutura Cloud","Analista Azure GCP Infraestrutura",
+  "🟡 Média-Alta — Cloud Híbrido": [
+    "Analista de Infraestrutura Cloud Pleno",
+    "Analista Azure AD e Infraestrutura",
+    "Analista Azure GCP Infraestrutura",
     "Cloud Infrastructure Analyst",
+    "Analista de GCP e Infraestrutura",
   ],
-  "Média — Expansão": [
-    "Analista DevOps Jr","Analista de Automação Infraestrutura",
-    "Engenheiro de Infraestrutura Jr","Analista Segurança da Informação",
+  "🟠 Média — Expansão": [
+    "Analista de Infraestrutura Cloud Sênior",
+    "Cloud Engineer Jr",
+    "Analista de Segurança da Informação Pleno",
+    "Analista DevOps Jr",
+    "Analista de Automação de Infraestrutura",
+    "Engenheiro de Infraestrutura Jr",
   ],
 };
 
-const TITULOS_RH = [
-  "Gestão de Pessoas","Desenvolvimento Organizacional","Psicóloga Organizacional",
-  "Psicóloga Clínica","Psicóloga do Trabalho","Psicóloga Saúde do Trabalho",
-  "RH Estratégico","Business Partner RH","HRBP",
-  "Coordenadora Desenvolvimento Organizacional","Treinamento e Desenvolvimento",
-  "Recrutamento e Seleção","Gerente de RH","Gerente de Recursos Humanos",
-  "Saúde do Trabalho","People Partner","Head of People",
-  "Coordenadora Psicologia","Analista Sênior Desenvolvimento Organizacional",
-  "Coordenadora Treinamento e Desenvolvimento","Gestão de Talentos Sênior",
-  "People Analytics Manager","Coordenadora Curso Psicologia","Docente Psicologia",
-];
+const GRUPOS_RH = {
+  "🟢 Alta Chance — Gestão e Desenvolvimento": [
+    "Gestão de Pessoas",
+    "Gestão de Pessoas Sênior",
+    "Desenvolvimento Organizacional",
+    "RH Estratégico",
+    "Business Partner RH",
+    "HRBP",
+    "HRBP Remoto",
+    "Coordenadora Desenvolvimento Organizacional",
+  ],
+  "🟢 Alta Chance — Psicologia": [
+    "Psicóloga Organizacional",
+    "Psicóloga Clínica",
+    "Psicóloga do Trabalho",
+    "Psicóloga Saúde do Trabalho",
+    "Coordenadora Psicologia",
+    "Coordenadora Psicologia Universidade",
+  ],
+  "🟡 Média-Alta — RH Amplo": [
+    "Gerente de Recursos Humanos",
+    "Analista Sênior Desenvolvimento Organizacional",
+    "Coordenadora Treinamento e Desenvolvimento",
+    "Gestão de Talentos Sênior",
+    "People Partner",
+    "Head of People",
+  ],
+  "🟡 Média-Alta — Educação e Coordenação": [
+    "Coordenadora Curso Psicologia",
+    "Coordenadora Pedagógica Ensino Superior",
+    "Docente Psicologia",
+  ],
+  "🟠 Média — Expansão": [
+    "Diretora de RH",
+    "Gerente Saúde Ocupacional",
+    "Consultora Desenvolvimento Organizacional",
+    "People Analytics Manager",
+  ],
+};
 
 const SITES_TI = {
   linkedin:"LinkedIn",   indeed:"Indeed",     glassdoor:"Glassdoor",
@@ -724,26 +836,180 @@ function baixarCSV(modo) {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-function buildGrupoSelect() {
-  const sel = document.getElementById("ti-grupo");
-  Object.keys(GRUPOS_TI).forEach(g => {
-    const opt = document.createElement("option");
-    opt.value = g; opt.textContent = g;
-    sel.appendChild(opt);
+// ── Prioridade ────────────────────────────────────────────────────────────────
+const COR_PRI = {
+  alta:       { cor:'#16a34a', bg:'#dcfce7', label:'Alta Chance' },
+  'media-alta':{ cor:'#ca8a04', bg:'#fef9c3', label:'Média-Alta' },
+  media:      { cor:'#ea580c', bg:'#ffedd5', label:'Média' },
+  default:    { cor:'#64748b', bg:'#f1f5f9', label:'' },
+};
+
+function grupoParaPri(nome) {
+  if (nome.startsWith('🟢')) return 'alta';
+  if (nome.startsWith('🟡')) return 'media-alta';
+  if (nome.startsWith('🟠')) return 'media';
+  return 'default';
+}
+
+function grupoNomeCurto(nome) {
+  return nome
+    .replace(/^[🟢🟡🟠]\s*/, '')
+    .replace(/Alta Chance — |Média-Alta — |Média — /, '');
+}
+
+function buildGrupoPills(modo, grupos) {
+  const container = document.getElementById(`${modo}-grupo-pills`);
+  let first = true;
+  container.innerHTML = Object.keys(grupos).map(g => {
+    const pri = grupoParaPri(g);
+    const active = first ? 'active' : '';
+    first = false;
+    return `<button class="grupo-pill ${active}" data-grupo="${esc(g)}" data-pri="${pri}"
+      onclick="selectGrupo('${modo}', this)">${grupoNomeCurto(g)}</button>`;
+  }).join('');
+  selectGrupo(modo, document.querySelector(`#${modo}-grupo-pills .grupo-pill`));
+}
+
+function selectGrupo(modo, el) {
+  if (!el) return;
+  const grupo = el.dataset.grupo;
+  const grupos = modo === 'ti' ? GRUPOS_TI : GRUPOS_RH;
+  document.querySelectorAll(`#${modo}-grupo-pills .grupo-pill`).forEach(p => {
+    p.classList.toggle('active', p.dataset.grupo === grupo);
   });
-  tiGrupoChange();
+  const pri   = grupoParaPri(grupo);
+  const cor   = COR_PRI[pri];
+  const titulos = grupos[grupo] || [];
+  const container = document.getElementById(`${modo}-titulo-chips`);
+  container.innerHTML = titulos.map((t, i) =>
+    `<button class="titulo-chip ${i===0?'selected':''}" data-titulo="${esc(t)}" data-pri="${pri}"
+      style="--tc-cor:${cor.cor};--tc-bg:${cor.bg}"
+      onclick="selectTitulo('${modo}',this)">${esc(t)}</button>`
+  ).join('');
 }
 
-function tiGrupoChange() {
-  const grupo = document.getElementById("ti-grupo").value;
-  const titulos = GRUPOS_TI[grupo] || [];
-  const sel = document.getElementById("ti-titulo");
-  sel.innerHTML = titulos.map(t => `<option value="${t}">${t}</option>`).join("");
+function selectTitulo(modo, el) {
+  document.querySelectorAll(`#${modo}-titulo-chips .titulo-chip`).forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
 }
 
-function buildTitulosRH() {
-  const sel = document.getElementById("rh-titulo");
-  sel.innerHTML = TITULOS_RH.map(t => `<option value="${t}">${t}</option>`).join("");
+function getTituloAtual(modo) {
+  const el = document.querySelector(`#${modo}-titulo-chips .titulo-chip.selected`);
+  return el ? { titulo: el.dataset.titulo, pri: el.dataset.pri } : null;
+}
+
+function buildGrupoSelect() { buildGrupoPills('ti', GRUPOS_TI); }
+function buildGrupoSelectRH() { buildGrupoPills('rh', GRUPOS_RH); }
+
+// ── Buscar Grupo (todos os títulos do grupo ativo) ────────────────────────────
+async function buscarGrupo(modo) {
+  const grupos = modo === 'ti' ? GRUPOS_TI : GRUPOS_RH;
+  const pillAtiva = document.querySelector(`#${modo}-grupo-pills .grupo-pill.active`);
+  if (!pillAtiva) return;
+  const grupo = pillAtiva.dataset.grupo;
+  const titulos = grupos[grupo] || [];
+  await _buscarLista(modo, titulos);
+}
+
+// ── Buscar Tudo (todos os grupos) ─────────────────────────────────────────────
+async function buscarTudo(modo) {
+  const grupos = modo === 'ti' ? GRUPOS_TI : GRUPOS_RH;
+  const titulos = Object.values(grupos).flat();
+  await _buscarLista(modo, titulos);
+}
+
+// ── Busca sequencial de múltiplos títulos ─────────────────────────────────────
+async function _buscarLista(modo, titulos) {
+  const chips = document.querySelectorAll(`#${modo}-titulo-chips .titulo-chip`);
+  // reset UI
+  _vagasData[modo] = [];
+  const rList  = document.getElementById(`${modo}-results`);
+  const rWrap  = document.getElementById(`${modo}-results-wrap`);
+  const count  = document.getElementById(`${modo}-count`);
+  const btnStop = document.getElementById(`${modo}-stop`);
+  const btnCsv  = document.getElementById(`${modo}-csv`);
+  const btnGrupo= document.getElementById(`${modo}-btn-grupo`);
+  const btnTudo = document.getElementById(`${modo}-btn-tudo`);
+  const btn     = document.getElementById(`${modo}-btn`);
+  rList.innerHTML = ''; rWrap.style.display = 'none';
+  btn.disabled = btnGrupo.disabled = btnTudo.disabled = true;
+  btnStop.style.display = 'inline-block'; btnCsv.style.display = 'none';
+
+  let total = 0;
+  const count_update = () => {
+    count.innerHTML = `<span>${total}</span> vaga${total!==1?'s':''} encontrada${total!==1?'s':''}`;
+    rWrap.style.display = 'block';
+  };
+
+  for (const titulo of titulos) {
+    if (!_controllers[modo] && Object.keys(_controllers).length === 0 && total > 0) {
+      // parado pelo usuário
+      break;
+    }
+
+    // Destaca o chip do título sendo buscado
+    document.querySelectorAll(`#${modo}-titulo-chips .titulo-chip`).forEach(c => {
+      c.classList.toggle('selected', c.dataset.titulo === titulo);
+    });
+    const chipEl = document.querySelector(`#${modo}-titulo-chips .titulo-chip[data-titulo="${titulo.replace(/"/g,'&quot;')}"]`);
+    const pri = chipEl ? chipEl.dataset.pri : 'default';
+
+    const log   = document.getElementById(`${modo}-log`);
+    const prog  = document.getElementById(`${modo}-progress`);
+    prog.style.display = 'block';
+
+    function addLog(msg, cls='') {
+      const span = document.createElement('span');
+      if (cls) span.className = cls;
+      span.textContent = msg + '\n'; log.appendChild(span);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    addLog(`\n▶ Buscando: "${titulo}"`, 'log-info');
+
+    const payload = _buildPayload(modo, titulo);
+    const ctrl = new AbortController();
+    _controllers[modo] = ctrl;
+
+    try {
+      const res = await fetch('/api/buscar', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload), signal: ctrl.signal,
+      });
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = '';
+      while (true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, {stream:true});
+        const lines = buf.split('\n'); buf = lines.pop();
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const ev = JSON.parse(line);
+          if (ev.type === 'log')  addLog(ev.msg, ev.msg.includes('Erro') ? 'log-err' : '');
+          if (ev.type === 'vaga') {
+            ev.data._pri = pri;
+            ev.data._titulo_buscado = titulo;
+            _vagasData[modo].push(ev.data);
+            rList.insertAdjacentHTML('beforeend', vagaCard(ev.data, modo));
+            total++; count_update();
+          }
+        }
+      }
+    } catch(e) {
+      if (e.name !== 'AbortError') addLog(`Erro: ${e.message}`, 'log-err');
+      else break;
+    }
+    delete _controllers[modo];
+  }
+
+  btn.disabled = btnGrupo.disabled = btnTudo.disabled = false;
+  btnStop.style.display = 'none';
+  if (_vagasData[modo].length) btnCsv.style.display = 'inline-block';
+  const bar = document.getElementById(`${modo}-bar`);
+  bar.style.animation = 'none'; bar.style.width = '100%';
+  setTimeout(()=>{ bar.style.width = '0%'; }, 800);
 }
 
 function buildSites(modo, sites, defaults) {
@@ -764,7 +1030,7 @@ function toggleChip(el) {
 }
 
 buildGrupoSelect();
-buildTitulosRH();
+buildGrupoSelectRH();
 buildSites("ti", SITES_TI, SITES_TI_PADRAO);
 buildSites("rh", SITES_RH, SITES_RH_PADRAO);
 buildEstadoSelect("ti");
@@ -780,37 +1046,43 @@ function switchTab(tab) {
 }
 
 // ── Search ────────────────────────────────────────────────────────────────────
+function _buildPayload(modo, titulo) {
+  return {
+    modo,
+    titulo,
+    sites:    [...document.querySelectorAll(`input[name="${modo}-site"]:checked`)].map(c => c.value),
+    quantidade: parseInt(document.getElementById(`${modo}-qtd`).value) || 20,
+    horas:    parseInt(document.getElementById(`${modo}-horas`).value) || 168,
+    remoto:   document.getElementById(`${modo}-remoto`).checked,
+    estado:   document.getElementById(`${modo}-estado`).value,
+    cidade:   document.getElementById(`${modo}-cidade`).value,
+  };
+}
+
 async function buscar(modo) {
   const btn    = document.getElementById(`${modo}-btn`);
   const btnStop= document.getElementById(`${modo}-stop`);
   const btnCsv = document.getElementById(`${modo}-csv`);
+  const btnGrupo = document.getElementById(`${modo}-btn-grupo`);
+  const btnTudo  = document.getElementById(`${modo}-btn-tudo`);
   const log    = document.getElementById(`${modo}-log`);
   const prog   = document.getElementById(`${modo}-progress`);
   const rWrap  = document.getElementById(`${modo}-results-wrap`);
   const rList  = document.getElementById(`${modo}-results`);
   const count  = document.getElementById(`${modo}-count`);
 
-  const titulo = document.getElementById(`${modo}-titulo`).value.trim();
-  const estado = document.getElementById(`${modo}-estado`).value;
-  const cidade = document.getElementById(`${modo}-cidade`).value;
-  const sites  = [...document.querySelectorAll(`input[name="${modo}-site"]:checked`)].map(c => c.value);
-  const qtd    = parseInt(document.getElementById(`${modo}-qtd`).value) || 20;
-  const horas  = parseInt(document.getElementById(`${modo}-horas`).value) || 168;
-  const remoto = document.getElementById(`${modo}-remoto`).checked;
-
-  if (!titulo) { alert("Selecione um título de vaga."); return; }
+  const curr = getTituloAtual(modo);
+  if (!curr) { alert("Selecione um título de vaga."); return; }
+  const { titulo, pri } = curr;
+  const sites = [...document.querySelectorAll(`input[name="${modo}-site"]:checked`)].map(c => c.value);
   if (!sites.length) { alert("Selecione ao menos um site."); return; }
 
-  // Reset
   parar(modo);
   _vagasData[modo] = [];
-  btn.disabled = true;
-  btnStop.style.display = "inline-block";
-  btnCsv.style.display  = "none";
-  log.innerHTML = "";
-  rList.innerHTML = "";
-  prog.style.display = "block";
-  rWrap.style.display = "none";
+  btn.disabled = btnGrupo.disabled = btnTudo.disabled = true;
+  btnStop.style.display = "inline-block"; btnCsv.style.display = "none";
+  log.innerHTML = ""; rList.innerHTML = "";
+  prog.style.display = "block"; rWrap.style.display = "none";
   let total = 0;
 
   function addLog(msg, cls="") {
@@ -822,6 +1094,7 @@ async function buscar(modo) {
   }
 
   function addVaga(v) {
+    v._pri = pri;
     _vagasData[modo].push(v);
     rList.insertAdjacentHTML("beforeend", vagaCard(v, modo));
     total++;
@@ -830,23 +1103,23 @@ async function buscar(modo) {
   }
 
   function fim() {
-    btn.disabled = false;
+    btn.disabled = btnGrupo.disabled = btnTudo.disabled = false;
     btnStop.style.display = "none";
     if (_vagasData[modo].length) btnCsv.style.display = "inline-block";
     const bar = document.getElementById(`${modo}-bar`);
-    bar.style.animation = "none";
-    bar.style.width = "100%";
+    bar.style.animation = "none"; bar.style.width = "100%";
     setTimeout(() => { bar.style.width = "0%"; }, 800);
   }
 
   const ctrl = new AbortController();
   _controllers[modo] = ctrl;
+  const payload = _buildPayload(modo, titulo);
 
   try {
     const res = await fetch("/api/buscar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ modo, titulo, sites, quantidade: qtd, horas, remoto, estado, cidade }),
+      body: JSON.stringify(payload),
       signal: ctrl.signal,
     });
 
@@ -879,24 +1152,30 @@ async function buscar(modo) {
 
 // ── Card template ─────────────────────────────────────────────────────────────
 function vagaCard(v, modo) {
-  const accent = modo === "ti" ? "#2563eb" : "#059669";
-  const siteBadge = `<span class="badge site">${v.site}</span>`;
-  const remoteBadge = v.remoto ? `<span class="badge remote">Remoto</span>` : "";
-  const salBadge = v.salario ? `<span class="badge salary">${esc(v.salario)}</span>` : "";
-  const dateBadge = v.data ? `<span class="badge date">${esc(v.data)}</span>` : "";
-  const localBadge = v.local && v.local !== "N/A" ? `<span class="badge">${esc(v.local)}</span>` : "";
-  const desc = v.descricao && v.descricao.length > 5 ? `<div class="vaga-desc">${renderDesc(v.descricao)}</div>` : "";
-  const url = v.url && v.url !== "#" ? v.url : null;
+  const pri     = v._pri || 'default';
+  const corInfo = COR_PRI[pri] || COR_PRI.default;
+  const borderCor = corInfo.cor;
 
-  return `<div class="vaga-card">
+  const priBadge   = pri !== 'default' ? `<span class="badge pri-badge pri-${pri}">${corInfo.label}</span>` : '';
+  const siteBadge  = `<span class="badge site">${esc(v.site)}</span>`;
+  const remoteBadge= v.remoto ? `<span class="badge remote">Remoto</span>` : "";
+  const salBadge   = v.salario ? `<span class="badge salary">${esc(v.salario)}</span>` : "";
+  const dateBadge  = v.data ? `<span class="badge date">${esc(v.data)}</span>` : "";
+  const localBadge = v.local && v.local !== "N/A" ? `<span class="badge">${esc(v.local)}</span>` : "";
+  const desc  = v.descricao && v.descricao.length > 5 ? `<div class="vaga-desc">${renderDesc(v.descricao)}</div>` : "";
+  const url   = v.url && v.url !== "#" ? v.url : null;
+  const titulo_b = v._titulo_buscado ? `<div style="font-size:.7rem;color:${borderCor};font-weight:600;margin-top:2px">🔍 ${esc(v._titulo_buscado)}</div>` : '';
+
+  return `<div class="vaga-card" style="border-left-color:${borderCor}">
     <div class="vaga-header">
       <div>
         <div class="vaga-titulo">${esc(v.titulo)}</div>
         <div class="vaga-empresa">${esc(v.empresa)}</div>
+        ${titulo_b}
       </div>
       ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" class="vaga-link">Ver vaga</a>` : ""}
     </div>
-    <div class="vaga-meta">${siteBadge}${remoteBadge}${localBadge}${salBadge}${dateBadge}</div>
+    <div class="vaga-meta">${priBadge}${siteBadge}${remoteBadge}${localBadge}${salBadge}${dateBadge}</div>
     ${desc}
   </div>`;
 }
