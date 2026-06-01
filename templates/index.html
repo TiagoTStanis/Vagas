@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Buscador de Vagas</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ti:   #2563eb;
+      --ti2:  #1d4ed8;
+      --ti-bg:#eff6ff;
+      --rh:   #059669;
+      --rh2:  #047857;
+      --rh-bg:#ecfdf5;
+      --bg:   #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted:#64748b;
+      --border:#e2e8f0;
+      --radius:12px;
+      --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    .app-header {
+      background: var(--text);
+      color: #fff;
+      text-align: center;
+      padding: 20px 16px 0;
+    }
+    .app-header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+    .app-header p {
+      font-size: .8rem;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    /* ── Tabs ────────────────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      background: var(--text);
+      padding: 14px 16px 0;
+      gap: 4px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .tab {
+      flex: 1;
+      padding: 10px 0;
+      font-size: .95rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      border-radius: 8px 8px 0 0;
+      transition: background .15s, color .15s;
+    }
+    .tab.active[data-tab="ti"]  { background: var(--ti-bg); color: var(--ti); }
+    .tab.active[data-tab="rh"]  { background: var(--rh-bg); color: var(--rh); }
+    .tab:not(.active):hover     { background: rgba(255,255,255,.08); color: #e2e8f0; }
+
+    /* ── Panels ──────────────────────────────────────────────────────── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .panel-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* ── Form card ───────────────────────────────────────────────────── */
+    .form-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 6px;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: .95rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+      transition: border-color .15s;
+    }
+    input[type="number"] {
+      background-image: none;
+      padding-right: 12px;
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--active, #2563eb);
+    }
+
+    /* ── Filters row ────────────────────────────────────────────────── */
+    .filters-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 11px;
+    }
+    .checkbox-field input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--active, #2563eb);
+      cursor: pointer;
+    }
+    .checkbox-field label {
+      font-size: .9rem;
+      font-weight: 500;
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: 0;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    /* ── Sites chips ─────────────────────────────────────────────────── */
+    .sites-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .site-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: #fff;
+      transition: all .15s;
+      user-select: none;
+    }
+    .site-chip input { display: none; }
+    .site-chip.checked {
+      border-color: var(--active, #2563eb);
+      background: var(--active-bg, #eff6ff);
+      color: var(--active, #2563eb);
+    }
+
+    /* ── Localização ─────────────────────────────────────────────────── */
+    .loc-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+    .btn-refresh-cities {
+      padding: 10px 14px;
+      font-size: .8rem;
+      font-weight: 600;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color .15s, color .15s;
+    }
+    .btn-refresh-cities:hover { border-color: var(--active, #2563eb); color: var(--active, #2563eb); }
+
+    /* ── Action buttons row ──────────────────────────────────────────── */
+    .actions-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: stretch;
+      margin-top: 4px;
+    }
+    .btn-buscar {
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      background: var(--active, #2563eb);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .15s, opacity .15s;
+    }
+    .btn-buscar:hover    { background: var(--active2, #1d4ed8); }
+    .btn-buscar:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-stop {
+      padding: 14px 16px;
+      font-size: .9rem;
+      font-weight: 600;
+      color: #fff;
+      background: #ef4444;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+    }
+    .btn-stop:hover { background: #dc2626; }
+    .btn-csv {
+      padding: 14px 16px;
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text);
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+    }
+    .btn-csv:hover { border-color: var(--active, #2563eb); color: var(--active, #2563eb); }
+
+    /* ── Progress ────────────────────────────────────────────────────── */
+    .progress-bar-wrap {
+      background: var(--border);
+      border-radius: 4px;
+      height: 4px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--active, #2563eb);
+      width: 0%;
+      transition: width .3s ease;
+      animation: indeterminate 1.4s ease infinite;
+    }
+    .progress-bar.running {
+      animation: indeterminate 1.4s ease infinite;
+    }
+    @keyframes indeterminate {
+      0%   { width: 0%;   margin-left: 0%; }
+      50%  { width: 40%;  margin-left: 30%; }
+      100% { width: 0%;   margin-left: 100%; }
+    }
+
+    .log-box {
+      background: #0f172a;
+      color: #94a3b8;
+      font-family: "Cascadia Code", "Fira Code", monospace;
+      font-size: .78rem;
+      line-height: 1.6;
+      padding: 12px 14px;
+      border-radius: 8px;
+      max-height: 140px;
+      overflow-y: auto;
+      margin-bottom: 14px;
+      white-space: pre-wrap;
+    }
+    .log-box .log-ok   { color: #4ade80; }
+    .log-box .log-err  { color: #f87171; }
+    .log-box .log-info { color: #60a5fa; }
+
+    /* ── Summary bar ─────────────────────────────────────────────────── */
+    .summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .summary-count {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .summary-count span {
+      color: var(--active, #2563eb);
+    }
+    .btn-clear {
+      font-size: .8rem;
+      padding: 5px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    /* ── Result cards ────────────────────────────────────────────────── */
+    .results { display: flex; flex-direction: column; gap: 10px; }
+
+    .vaga-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      border-left: 3px solid var(--border);
+      transition: border-color .15s;
+      animation: fadeIn .25s ease;
+    }
+    .vaga-card:hover { border-left-color: var(--active, #2563eb); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .vaga-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .vaga-titulo {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .vaga-empresa {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .vaga-link {
+      flex-shrink: 0;
+      padding: 7px 14px;
+      font-size: .8rem;
+      font-weight: 600;
+      color: #fff;
+      background: var(--active, #2563eb);
+      border-radius: 6px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background .15s;
+    }
+    .vaga-link:hover { background: var(--active2, #1d4ed8); }
+
+    .vaga-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: .72rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--muted);
+    }
+    .badge.remote { background: #ecfdf5; color: #059669; }
+    .badge.site   { background: #eff6ff; color: #2563eb; }
+    .badge.salary { background: #fefce8; color: #a16207; }
+    .badge.date   { background: #f8fafc; color: #64748b; }
+
+    .vaga-desc {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.6;
+    }
+
+    /* ── Empty state ─────────────────────────────────────────────────── */
+    .empty {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty p    { font-size: .9rem; }
+
+    /* ── Responsive ──────────────────────────────────────────────────── */
+    @media (max-width: 560px) {
+      .filters-row { grid-template-columns: 1fr 1fr; }
+      .checkbox-field { grid-column: span 2; }
+      .loc-row { grid-template-columns: 1fr 1fr; }
+      .loc-row > div:last-child { display: none; }
+      .actions-row { grid-template-columns: 1fr auto auto; }
+      .vaga-header { flex-direction: column; }
+      .vaga-link { align-self: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <h1>Buscador de Vagas</h1>
+  <p>LinkedIn · Indeed · Glassdoor · Google Jobs · Gupy · Remotar · Programathor · Vagas.com · InfoJobs · Remote OK · GeekHunter</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-tab="ti" onclick="switchTab('ti')">💻 TI</button>
+  <button class="tab"        data-tab="rh" onclick="switchTab('rh')">👥 RH</button>
+</div>
+
+<!-- ═══════════════════════ PAINEL TI ══════════════════════════════════════ -->
+<div id="panel-ti" class="panel active" style="--active:var(--ti);--active2:var(--ti2);--active-bg:var(--ti-bg)">
+<div class="panel-inner">
+
+  <div class="form-card">
+    <div class="field">
+      <label>Grupo de vagas</label>
+      <select id="ti-grupo" onchange="tiGrupoChange()"></select>
+    </div>
+    <div class="field">
+      <label>Título da vaga</label>
+      <select id="ti-titulo"></select>
+    </div>
+    <div class="loc-row">
+      <div class="field" style="margin:0">
+        <label>Estado</label>
+        <select id="ti-estado" onchange="loadCidades('ti')"></select>
+      </div>
+      <div class="field" style="margin:0">
+        <label>Cidade</label>
+        <select id="ti-cidade"></select>
+      </div>
+      <div>
+        <label style="visibility:hidden">‎</label>
+        <button class="btn-refresh-cities" onclick="loadCidades('ti')">↺</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Buscar em</label>
+      <div class="sites-grid" id="ti-sites"></div>
+    </div>
+    <div class="filters-row">
+      <div class="field" style="margin:0">
+        <label>Vagas / site</label>
+        <input type="number" id="ti-qtd" value="20" min="5" max="100">
+      </div>
+      <div class="field" style="margin:0">
+        <label>Últimas horas</label>
+        <select id="ti-horas">
+          <option value="24">24h</option>
+          <option value="48">48h</option>
+          <option value="72">72h</option>
+          <option value="168" selected>7 dias</option>
+          <option value="336">2 semanas</option>
+          <option value="720">1 mês</option>
+        </select>
+      </div>
+      <div class="checkbox-field">
+        <input type="checkbox" id="ti-remoto">
+        <label for="ti-remoto">Só remoto</label>
+      </div>
+    </div>
+    <div class="actions-row">
+      <button class="btn-buscar" id="ti-btn"  onclick="buscar('ti')">▶ Buscar Vagas</button>
+      <button class="btn-stop"   id="ti-stop" onclick="parar('ti')">■ Parar</button>
+      <button class="btn-csv"    id="ti-csv"  onclick="baixarCSV('ti')">⬇ CSV</button>
+    </div>
+  </div>
+
+  <div id="ti-progress" style="display:none">
+    <div class="progress-bar-wrap"><div class="progress-bar running" id="ti-bar"></div></div>
+    <div class="log-box" id="ti-log"></div>
+  </div>
+
+  <div id="ti-results-wrap" style="display:none">
+    <div class="summary">
+      <div class="summary-count" id="ti-count">0 vagas encontradas</div>
+      <button class="btn-clear" onclick="clearResults('ti')">Limpar</button>
+    </div>
+    <div class="results" id="ti-results"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════ PAINEL RH ══════════════════════════════════════ -->
+<div id="panel-rh" class="panel" style="--active:var(--rh);--active2:var(--rh2);--active-bg:var(--rh-bg)">
+<div class="panel-inner">
+
+  <div class="form-card">
+    <div class="field">
+      <label>Título da vaga</label>
+      <select id="rh-titulo"></select>
+    </div>
+    <div class="loc-row">
+      <div class="field" style="margin:0">
+        <label>Estado</label>
+        <select id="rh-estado" onchange="loadCidades('rh')"></select>
+      </div>
+      <div class="field" style="margin:0">
+        <label>Cidade</label>
+        <select id="rh-cidade"></select>
+      </div>
+      <div>
+        <label style="visibility:hidden">‎</label>
+        <button class="btn-refresh-cities" onclick="loadCidades('rh')">↺</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Buscar em</label>
+      <div class="sites-grid" id="rh-sites"></div>
+    </div>
+    <div class="filters-row">
+      <div class="field" style="margin:0">
+        <label>Vagas / site</label>
+        <input type="number" id="rh-qtd" value="20" min="5" max="100">
+      </div>
+      <div class="field" style="margin:0">
+        <label>Últimas horas</label>
+        <select id="rh-horas">
+          <option value="24">24h</option>
+          <option value="48">48h</option>
+          <option value="72">72h</option>
+          <option value="168" selected>7 dias</option>
+          <option value="336">2 semanas</option>
+          <option value="720">1 mês</option>
+        </select>
+      </div>
+      <div class="checkbox-field">
+        <input type="checkbox" id="rh-remoto">
+        <label for="rh-remoto">Só remoto</label>
+      </div>
+    </div>
+    <div class="actions-row">
+      <button class="btn-buscar" id="rh-btn"  onclick="buscar('rh')">▶ Buscar Vagas</button>
+      <button class="btn-stop"   id="rh-stop" onclick="parar('rh')">■ Parar</button>
+      <button class="btn-csv"    id="rh-csv"  onclick="baixarCSV('rh')">⬇ CSV</button>
+    </div>
+  </div>
+
+  <div id="rh-progress" style="display:none">
+    <div class="progress-bar-wrap"><div class="progress-bar running" id="rh-bar"></div></div>
+    <div class="log-box" id="rh-log"></div>
+  </div>
+
+  <div id="rh-results-wrap" style="display:none">
+    <div class="summary">
+      <div class="summary-count" id="rh-count">0 vagas encontradas</div>
+      <button class="btn-clear" onclick="clearResults('rh')">Limpar</button>
+    </div>
+    <div class="results" id="rh-results"></div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+const GRUPOS_TI = {
+  "Alta Chance — Suporte / Helpdesk": [
+    "Analista de Suporte N2 Remoto","Analista de Suporte N3 Remoto",
+    "Analista de Suporte TI Pleno","Analista de Field Support Pleno",
+    "Especialista de Suporte TI Remoto",
+  ],
+  "Alta Chance — SysAdmin / Windows": [
+    "Analista de Infraestrutura Windows","Administrador Active Directory",
+    "Analista Azure AD Infraestrutura","SysAdmin Pleno",
+    "Analista Endpoint Management Intune","Analista Identidade e Acesso IAM",
+  ],
+  "Média-Alta — Infraestrutura": [
+    "Analista de Infraestrutura TI Pleno","Analista de Infraestrutura Redes",
+    "Analista de Datacenter Pleno","Analista NOC Pleno",
+  ],
+  "Média-Alta — Redes / Segurança": [
+    "Analista de Redes Pleno","Analista de Firewall Fortinet",
+    "Especialista FortiGate","Analista de Segurança de Redes",
+  ],
+  "Média-Alta — Cloud Híbrido": [
+    "Analista Infraestrutura Cloud","Analista Azure GCP Infraestrutura",
+    "Cloud Infrastructure Analyst",
+  ],
+  "Média — Expansão": [
+    "Analista DevOps Jr","Analista de Automação Infraestrutura",
+    "Engenheiro de Infraestrutura Jr","Analista Segurança da Informação",
+  ],
+};
+
+const TITULOS_RH = [
+  "Gestão de Pessoas","Desenvolvimento Organizacional","Psicóloga Organizacional",
+  "Psicóloga Clínica","Psicóloga do Trabalho","Psicóloga Saúde do Trabalho",
+  "RH Estratégico","Business Partner RH","HRBP",
+  "Coordenadora Desenvolvimento Organizacional","Treinamento e Desenvolvimento",
+  "Recrutamento e Seleção","Gerente de RH","Gerente de Recursos Humanos",
+  "Saúde do Trabalho","People Partner","Head of People",
+  "Coordenadora Psicologia","Analista Sênior Desenvolvimento Organizacional",
+  "Coordenadora Treinamento e Desenvolvimento","Gestão de Talentos Sênior",
+  "People Analytics Manager","Coordenadora Curso Psicologia","Docente Psicologia",
+];
+
+const SITES_TI = {
+  linkedin:"LinkedIn",   indeed:"Indeed",     glassdoor:"Glassdoor",
+  google:"Google Jobs",  gupy:"Gupy",          remotar:"Remotar",
+  programathor:"Programathor", "vagas.com":"Vagas.com",
+  infojobs:"InfoJobs",   remoteok:"Remote OK", geekhunter:"GeekHunter",
+};
+const SITES_RH = {
+  linkedin:"LinkedIn",  indeed:"Indeed",   glassdoor:"Glassdoor",
+  google:"Google Jobs", gupy:"Gupy",       infojobs:"InfoJobs",
+  jooble:"Jooble",      "vagas.com":"Vagas.com",
+};
+const SITES_TI_PADRAO = new Set(["linkedin","indeed","gupy","remotar","vagas.com","infojobs","geekhunter"]);
+const SITES_RH_PADRAO = new Set(["linkedin","indeed","glassdoor","google","gupy","infojobs","jooble"]);
+
+// ── Estados ───────────────────────────────────────────────────────────────────
+const ESTADOS = {
+  "":   "Todo o Brasil",
+  "AC": "Acre",            "AL": "Alagoas",       "AP": "Amapá",
+  "AM": "Amazonas",        "BA": "Bahia",          "CE": "Ceará",
+  "DF": "Distrito Federal","ES": "Espírito Santo", "GO": "Goiás",
+  "MA": "Maranhão",        "MT": "Mato Grosso",    "MS": "Mato Grosso do Sul",
+  "MG": "Minas Gerais",    "PA": "Pará",           "PB": "Paraíba",
+  "PR": "Paraná",          "PE": "Pernambuco",     "PI": "Piauí",
+  "RJ": "Rio de Janeiro",  "RN": "Rio Grande do Norte",
+  "RS": "Rio Grande do Sul","RO": "Rondônia",      "RR": "Roraima",
+  "SC": "Santa Catarina",  "SP": "São Paulo",      "SE": "Sergipe",
+  "TO": "Tocantins",
+};
+const CIDADES_FALLBACK = {
+  SP: ["São Paulo","Campinas","Santos","Guarulhos","Ribeirão Preto","São Bernardo do Campo","Santo André","Osasco","Sorocaba","São José dos Campos"],
+  RJ: ["Rio de Janeiro","Niterói","Duque de Caxias","Nova Iguaçu","São Gonçalo"],
+  MG: ["Belo Horizonte","Uberlândia","Contagem","Juiz de Fora","Betim"],
+  PR: ["Curitiba","Londrina","Maringá","Ponta Grossa","Cascavel"],
+  RS: ["Porto Alegre","Caxias do Sul","Pelotas","Canoas","Santa Maria"],
+  SC: ["Florianópolis","Joinville","Blumenau","São José","Chapecó"],
+  BA: ["Salvador","Feira de Santana","Vitória da Conquista","Camaçari"],
+  PE: ["Recife","Caruaru","Petrolina","Olinda","Paulista"],
+  CE: ["Fortaleza","Caucaia","Juazeiro do Norte","Maracanaú"],
+  GO: ["Goiânia","Aparecida de Goiânia","Anápolis","Rio Verde"],
+};
+
+function buildEstadoSelect(modo) {
+  const sel = document.getElementById(`${modo}-estado`);
+  sel.innerHTML = Object.entries(ESTADOS)
+    .map(([uf, nome]) => `<option value="${uf}">${uf ? uf + " — " + nome : nome}</option>`)
+    .join("");
+  sel.value = "SP";
+}
+
+async function loadCidades(modo) {
+  const uf = document.getElementById(`${modo}-estado`).value;
+  const sel = document.getElementById(`${modo}-cidade`);
+  if (!uf) {
+    sel.innerHTML = '<option value="">— Todo o estado —</option>';
+    return;
+  }
+  sel.innerHTML = '<option value="">Carregando...</option>';
+  try {
+    const r = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
+    const data = await r.json();
+    const cidades = data.map(c => c.nome).sort((a,b) => a.localeCompare(b, "pt-BR"));
+    sel.innerHTML = '<option value="">— Cidade inteira —</option>' +
+      cidades.map(c => `<option value="${c}">${c}</option>`).join("");
+    const cap = { SP:"São Paulo", RJ:"Rio de Janeiro", MG:"Belo Horizonte", PR:"Curitiba",
+                  RS:"Porto Alegre", SC:"Florianópolis", BA:"Salvador", PE:"Recife",
+                  CE:"Fortaleza", GO:"Goiânia", AM:"Manaus", PA:"Belém", DF:"Brasília" };
+    if (cap[uf] && cidades.includes(cap[uf])) sel.value = cap[uf];
+  } catch {
+    const fallback = CIDADES_FALLBACK[uf] || [];
+    sel.innerHTML = '<option value="">— Cidade inteira —</option>' +
+      fallback.map(c => `<option value="${c}">${c}</option>`).join("");
+    if (fallback.length) sel.value = fallback[0];
+  }
+}
+
+// ── Abort controllers ─────────────────────────────────────────────────────────
+const _controllers = {};
+function parar(modo) {
+  if (_controllers[modo]) {
+    _controllers[modo].abort();
+    delete _controllers[modo];
+  }
+}
+
+// ── CSV download ──────────────────────────────────────────────────────────────
+const _vagasData = { ti: [], rh: [] };
+function baixarCSV(modo) {
+  const vagas = _vagasData[modo];
+  if (!vagas.length) return;
+  const cols = ["titulo","empresa","local","remoto","tipo","data","site","url","salario"];
+  const header = cols.join(";");
+  const rows = vagas.map(v => cols.map(c => `"${(v[c]||"").toString().replace(/"/g,'""')}"`).join(";"));
+  const blob = new Blob(["﻿" + [header,...rows].join("\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  const titulo = document.getElementById(`${modo}-titulo`).value.replace(/\s+/g,"-").toLowerCase();
+  a.download = `vagas-${modo}-${titulo}-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function buildGrupoSelect() {
+  const sel = document.getElementById("ti-grupo");
+  Object.keys(GRUPOS_TI).forEach(g => {
+    const opt = document.createElement("option");
+    opt.value = g; opt.textContent = g;
+    sel.appendChild(opt);
+  });
+  tiGrupoChange();
+}
+
+function tiGrupoChange() {
+  const grupo = document.getElementById("ti-grupo").value;
+  const titulos = GRUPOS_TI[grupo] || [];
+  const sel = document.getElementById("ti-titulo");
+  sel.innerHTML = titulos.map(t => `<option value="${t}">${t}</option>`).join("");
+}
+
+function buildTitulosRH() {
+  const sel = document.getElementById("rh-titulo");
+  sel.innerHTML = TITULOS_RH.map(t => `<option value="${t}">${t}</option>`).join("");
+}
+
+function buildSites(modo, sites, defaults) {
+  const container = document.getElementById(`${modo}-sites`);
+  container.innerHTML = Object.entries(sites).map(([slug, nome]) => {
+    const checked = defaults.has(slug) ? "checked" : "";
+    return `<label class="site-chip ${checked ? 'checked' : ''}" onclick="toggleChip(this)">
+      <input type="checkbox" name="${modo}-site" value="${slug}" ${checked}>
+      ${nome}
+    </label>`;
+  }).join("");
+}
+
+function toggleChip(el) {
+  const cb = el.querySelector("input");
+  cb.checked = !cb.checked;
+  el.classList.toggle("checked", cb.checked);
+}
+
+buildGrupoSelect();
+buildTitulosRH();
+buildSites("ti", SITES_TI, SITES_TI_PADRAO);
+buildSites("rh", SITES_RH, SITES_RH_PADRAO);
+buildEstadoSelect("ti");
+buildEstadoSelect("rh");
+loadCidades("ti");
+loadCidades("rh");
+
+// ── Tab switch ────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.getElementById(`panel-${tab}`).classList.add("active");
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+async function buscar(modo) {
+  const btn    = document.getElementById(`${modo}-btn`);
+  const btnStop= document.getElementById(`${modo}-stop`);
+  const btnCsv = document.getElementById(`${modo}-csv`);
+  const log    = document.getElementById(`${modo}-log`);
+  const prog   = document.getElementById(`${modo}-progress`);
+  const rWrap  = document.getElementById(`${modo}-results-wrap`);
+  const rList  = document.getElementById(`${modo}-results`);
+  const count  = document.getElementById(`${modo}-count`);
+
+  const titulo = document.getElementById(`${modo}-titulo`).value.trim();
+  const estado = document.getElementById(`${modo}-estado`).value;
+  const cidade = document.getElementById(`${modo}-cidade`).value;
+  const sites  = [...document.querySelectorAll(`input[name="${modo}-site"]:checked`)].map(c => c.value);
+  const qtd    = parseInt(document.getElementById(`${modo}-qtd`).value) || 20;
+  const horas  = parseInt(document.getElementById(`${modo}-horas`).value) || 168;
+  const remoto = document.getElementById(`${modo}-remoto`).checked;
+
+  if (!titulo) { alert("Selecione um título de vaga."); return; }
+  if (!sites.length) { alert("Selecione ao menos um site."); return; }
+
+  // Reset
+  parar(modo);
+  _vagasData[modo] = [];
+  btn.disabled = true;
+  btnStop.style.display = "inline-block";
+  btnCsv.style.display  = "none";
+  log.innerHTML = "";
+  rList.innerHTML = "";
+  prog.style.display = "block";
+  rWrap.style.display = "none";
+  let total = 0;
+
+  function addLog(msg, cls="") {
+    const span = document.createElement("span");
+    if (cls) span.className = cls;
+    span.textContent = msg + "\n";
+    log.appendChild(span);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function addVaga(v) {
+    _vagasData[modo].push(v);
+    rList.insertAdjacentHTML("beforeend", vagaCard(v, modo));
+    total++;
+    count.innerHTML = `<span>${total}</span> vaga${total !== 1 ? "s" : ""} encontrada${total !== 1 ? "s" : ""}`;
+    rWrap.style.display = "block";
+  }
+
+  function fim() {
+    btn.disabled = false;
+    btnStop.style.display = "none";
+    if (_vagasData[modo].length) btnCsv.style.display = "inline-block";
+    const bar = document.getElementById(`${modo}-bar`);
+    bar.style.animation = "none";
+    bar.style.width = "100%";
+    setTimeout(() => { bar.style.width = "0%"; }, 800);
+  }
+
+  const ctrl = new AbortController();
+  _controllers[modo] = ctrl;
+
+  try {
+    const res = await fetch("/api/buscar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ modo, titulo, sites, quantidade: qtd, horas, remoto, estado, cidade }),
+      signal: ctrl.signal,
+    });
+
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split("\n");
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        const ev = JSON.parse(line);
+        if (ev.type === "log")  addLog(ev.msg, ev.msg.includes("Erro") ? "log-err" : "");
+        if (ev.type === "vaga") addVaga(ev.data);
+        if (ev.type === "done") addLog(`\nConcluído — ${ev.total} vagas no total`, "log-ok");
+      }
+    }
+  } catch (e) {
+    if (e.name !== "AbortError") addLog(`Erro: ${e.message}`, "log-err");
+    else addLog("Busca interrompida.", "log-err");
+  } finally {
+    fim();
+    delete _controllers[modo];
+  }
+}
+
+// ── Card template ─────────────────────────────────────────────────────────────
+function vagaCard(v, modo) {
+  const accent = modo === "ti" ? "#2563eb" : "#059669";
+  const siteBadge = `<span class="badge site">${v.site}</span>`;
+  const remoteBadge = v.remoto ? `<span class="badge remote">Remoto</span>` : "";
+  const salBadge = v.salario ? `<span class="badge salary">${esc(v.salario)}</span>` : "";
+  const dateBadge = v.data ? `<span class="badge date">${esc(v.data)}</span>` : "";
+  const localBadge = v.local && v.local !== "N/A" ? `<span class="badge">${esc(v.local)}</span>` : "";
+  const desc = v.descricao && v.descricao.length > 5 ? `<div class="vaga-desc">${renderDesc(v.descricao)}</div>` : "";
+  const url = v.url && v.url !== "#" ? v.url : null;
+
+  return `<div class="vaga-card">
+    <div class="vaga-header">
+      <div>
+        <div class="vaga-titulo">${esc(v.titulo)}</div>
+        <div class="vaga-empresa">${esc(v.empresa)}</div>
+      </div>
+      ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" class="vaga-link">Ver vaga</a>` : ""}
+    </div>
+    <div class="vaga-meta">${siteBadge}${remoteBadge}${localBadge}${salBadge}${dateBadge}</div>
+    ${desc}
+  </div>`;
+}
+
+function esc(s) {
+  if (!s) return "";
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function renderDesc(s) {
+  if (!s) return "";
+  return esc(s)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/\n/g, "<br>");
+}
+
+function clearResults(modo) {
+  document.getElementById(`${modo}-results`).innerHTML = "";
+  document.getElementById(`${modo}-results-wrap`).style.display = "none";
+  document.getElementById(`${modo}-progress`).style.display = "none";
+  document.getElementById(`${modo}-log`).innerHTML = "";
+}
+</script>
+</body>
+</html>
